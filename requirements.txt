@@ -1,7 +1,7 @@
 asgiref==3.4.1
 cv2-utils==0.2.0
 Django==3.2.7
-django-environment==0.9.0
+django-environment==0.3.8
 gunicorn==20.1.0
 facenet-pytorch==2.5.2
 imshow==0.0.3
