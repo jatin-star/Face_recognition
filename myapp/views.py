@@ -20,8 +20,6 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 path = BASE_DIR + "/myapp/static/haarcascade_face.xml"
 trainy = Face_data['Name']
 resnet = InceptionResnetV1().eval()
-state_dict = torch.load(BASE_DIR + "/myapp/static/model.pth")
-resnet.load_state_dict(state_dict, strict=False)
 
 face_cascade = cv2.CascadeClassifier(path)
 
