@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Data Loader</title>
+          {% load static %}
+
+    <style>
+        *{padding: 0; margin: 0; box-sizing: border-box;}
+body{height: 900px;}
+
+body{
+    position:relative;
+	background-color: black;
+	background-image: url('{% static 'image.jpg' %}');
+	background-size: cover;
+	background-position: center;
+	color: white;
+	font-family: 'Dancing Script', cursive;
+}
+
+h1{
+    text-align: center;
+}
+
+.buttons{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  top: 25%;
+  left: 0;
+  right: 0;
+  margin: auto;
+}
+
+#save-data-btn, form{
+  display:inline-block;
+  width: 0 auto;
+  box-shadow: hsla(210, 40%, 52%, .3) 3px 3px 22px 3px;
+  border-radius: 50%;
+  font-family: 'Dancing Script', cursive;
+  padding: 2em 3em;
+  border: 2px solid var(--colorShadeA);
+  transform-style: preserve-3d;
+  transition: all 175ms cubic-bezier(0, 0, 1, 1);
+}
+
+#save-data-btn :hover {
+  transform: translate(0, 0.375em);
+}
+
+
+
+
+
+</style>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+</head>
+<body>
+    <h1>Save & Load Face Data</h1>
+    <div class="buttons">
+    <button id="save-data-btn">Save Data</button>
+    <form method="POST" enctype="multipart/form-data" action="{% url 'data_loader' %}">
+        {% csrf_token %}
+        <input type="file" name="data_file" accept=".pkl">
+        <input type="submit" value="Load DataFrame">
+    </form>
+    </div>
+
+    <div id="success-msg" style="display: none;"></div>
+    <div id="error-msg" style="display: none;"></div>
+
+    <script>
+        $(document).ready(function() {
+            $('#save-data-btn').click(function() {
+                    window.location.href = "{% url 'save_dataframe' %}";
+        });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {% load static %}
+    <title>Teachable Machine-like Capture</title>
+
+    <style>
+        *{padding: 0; margin: 0; box-sizing: border-box;}
+body{height: 900px;}
+
+body{
+    position:relative;
+	background-color: black;
+	background-image: url('{% static 'image.jpg' %}');
+	background-size: cover;
+	background-position: center;
+	color: white;
+    font-family: 'Dancing Script', cursive;
+}
+
+h1{
+    text-align:center;
+}
+
+.video-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 50vh;
+}
+
+#video {
+        width: 300px;
+        height: 300px;
+        border-radius: 50%;
+        object-fit: cover;
+}
+
+    </style>
+</head>
+<body>
+    <h1>Add Faces and Create Data</h1>
+    <h3>Images will only capture if Face is perfectly visible</h3>
+    <label>Name:</label>
+    <input type="text" id = "name-input" name="name"  class="form-control" placeholder="Enter name here..." required>
+
+    <div class="video-container">
+        <video id="video" autoplay></video>
+    </div>
+    <div class="Content-container">
+    <button id="start-btn">Start Capture</button>
+    <button id="stop-btn" disabled>Stop Capture</button>
+    <p id="image-count">Images Captured: 0</p>
+    <button id="prepare-btn" disabled>Prepare</button>
+    <div id="responseMessage"></div>
+    </div>
+
+    <script>
+        var name = document.getElementById('name');
+        var video = document.getElementById('video');
+        var startBtn = document.getElementById('start-btn');
+        var stopBtn = document.getElementById('stop-btn');
+        var imageCountElement = document.getElementById('image-count');
+        var prepareBtn = document.getElementById('prepare-btn');
+        var nameInput = document.getElementById('name-input');
+        var mediaStream;
+        var captureInterval;
+        var capturedImages = [];
+
+        // Start capturing images
+        startBtn.addEventListener('click', function() {
+            startBtn.disabled = true;
+            stopBtn.disabled = false;
+            capturedImages = [];
+
+            // Access the user's camera
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(function(stream) {
+                    video.srcObject = stream;
+                    mediaStream = stream;
+
+                    // Capture an image every 1 second
+                    captureInterval = setInterval(captureImage, 20);
+                })
+
+                .catch(function(error) {
+                    console.error('Error accessing camera: ', error);
+                });
+        });
+
+        // Stop capturing images
+        stopBtn.addEventListener('click', function() {
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+            prepareBtn.disabled = false;
+
+            // Stop capturing images
+            clearInterval(captureInterval);
+            captureInterval = null;
+
+            // Stop the media stream and release the camera
+            if (mediaStream) {
+                mediaStream.getTracks().forEach(function(track) {
+                    track.stop();
+                });
+                mediaStream = null;
+            }
+        });
+
+        // Prepare images for processing
+        prepareBtn.addEventListener('click', function() {
+            var name = nameInput.value;
+            document.getElementById('responseMessage').textContent = "Wait for Data Preparation"; // Update the HTML content with the response message
+
+            prepareBtn.disabled = true;
+            console.log('Preparing Images'); // Log the capturedImages array to the console
+
+            // Send the captured images to the Django backend
+            fetch('/prepare_images', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({ name: name })
+            })
+
+            .then(function(response) {
+                // Check the response status and display appropriate message
+            if (response.ok) {
+                return response.json();
+            } else {
+                throw new Error('No response');
+            }
+            })
+
+            .then(function(data) {
+                console.log(data.message); // Display the response message
+                document.getElementById('responseMessage').textContent = data.message; // Update the HTML content with the response message
+                if (data.Done == 'No'){
+                    prepareBtn.disabled = false;
+                }
+                })
+
+            .catch(function(error) {
+               console.error('Error preparing images: ', error);
+                });
+            });
+
+        // Capture an image from the video feed
+        function captureImage() {
+            var canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+
+            // Draw the current video frame onto the canvas
+            var ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            // Get the image data from the canvas as a data URL
+            var imageDataURL = canvas.toDataURL('image/png');
+
+            // Send the captured image to the Django backend
+            fetch('/capture_images', {
+            method: 'POST',
+            headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ image: imageDataURL })
+            })
+
+            .then(function(response) {
+            // Check the response status and display appropriate message
+            if (response.ok) {
+                return response.json();
+                }
+            else {
+                throw new Error('Error capturing image.');
+                }
+             })
+
+            .then(function(data) {
+                if (data.status === 'success' && data.face_found) {
+                // Increment the captured image count and update the display
+                capturedImages.push(imageDataURL);
+                imageCountElement.textContent = 'Images Captured: ' + capturedImages.length;
+                }
+                 else {
+                    console.log('No face found in the captured image.');
+                }
+            })
+            .catch(function(error) {
+                console.error('Error capturing image: ', error);
+            });
+        }
+    </script>
+</body>
+</html>

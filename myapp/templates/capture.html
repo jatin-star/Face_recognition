@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Photo Capture</title>
+    <style>
+        #video-preview {
+            width: 250px;
+            height: 250px;
+        }
+
+        #capture-button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Photo Capture</h1>
+    <video id="video-preview"></video>
+    <button id="capture-button">Capture Photo</button>
+    <canvas id="canvas" style="display: none;"></canvas>
+    <script>
+        const video = document.getElementById('video-preview');
+        const canvas = document.getElementById('canvas');
+        const captureButton = document.getElementById('capture-button');
+
+        // Get access to the user's camera
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                video.srcObject = stream;
+                video.play();
+            })
+            .catch(error => {
+                console.error('Error accessing camera:', error);
+            });
+
+        // Capture photo on button click
+        captureButton.addEventListener('click', () => {
+            // Draw the current video frame on the canvas
+            const context = canvas.getContext('2d');
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            // Convert the canvas image to base64 data URL
+            const imageData = canvas.toDataURL('image/png');
+
+            // Do something with the captured photo (e.g., send it to the server)
+            console.log('Captured photo:', imageData);
+        });
+    </script>
+</body>
+</html>

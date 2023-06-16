@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    {% load static %}
+    <title>Face Recognize</title>
+
+    <style>
+            *{padding: 0; margin: 0; box-sizing: border-box;}
+body{height: 900px;}
+
+body{
+    position:relative;
+	background-color: black;
+	background-image: url('{% static 'image.jpg' %}');
+	background-size: cover;
+	background-position: center;
+	color: white;
+    font-family: 'Dancing Script', cursive;
+}
+
+.video-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 50vh;
+}
+
+#video {
+        width: 300px;
+        height: 300px;
+        border-radius: 50%;
+        object-fit: cover;
+}
+
+
+</style>
+
+</head>
+<body>
+    <h1>Face Recognize</h1>
+    <h3>Images will only capture if Face is perfectly visible</h3>
+
+    <div class="video-container">
+        <video id="video" autoplay></video>
+    </div>
+    <button id="start-btn">Start Capture</button>
+    <button id="stop-btn" disabled>Stop Capture</button>
+    <p id="person-name">Hi </p>
+
+    <script>
+        var video = document.getElementById('video');
+        var startBtn = document.getElementById('start-btn');
+        var stopBtn = document.getElementById('stop-btn');
+        var personName = document.getElementById('person-name');
+        var mediaStream;
+        var captureInterval;
+
+        // Start capturing images
+        startBtn.addEventListener('click', function() {
+            startBtn.disabled = true;
+            stopBtn.disabled = false;
+
+            // Access the user's camera
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(function(stream) {
+                    video.srcObject = stream;
+                    mediaStream = stream;
+
+                    // Capture an image every 1 second
+                    captureInterval = setInterval(captureImage, 100);
+                })
+
+                .catch(function(error) {
+                    console.error('Error accessing camera: ', error);
+                });
+        });
+
+        // Stop capturing images
+        stopBtn.addEventListener('click', function() {
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+
+            // Stop capturing images
+            clearInterval(captureInterval);
+            captureInterval = null;
+
+            // Stop the media stream and release the camera
+            if (mediaStream) {
+                mediaStream.getTracks().forEach(function(track) {
+                    track.stop();
+                });
+                mediaStream = null;
+            }
+        });
+
+        // Capture an image from the video feed
+        function captureImage() {
+            var canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+
+            // Draw the current video frame onto the canvas
+            var ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            // Get the image data from the canvas as a data URL
+            var imageDataURL = canvas.toDataURL('image/png');
+
+            // Send the captured image to the Django backend
+            fetch('recognize_fun', {
+            method: 'POST',
+            headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ image: imageDataURL })
+            })
+
+            .then(function(response) {
+            // Check the response status and display appropriate message
+            if (response.ok) {
+                return response.json();
+                }
+            else {
+                throw new Error('No response');
+                }
+             })
+
+            .then(function(data) {
+                    console.log(data.message[0]);
+                    personName.textContent = 'Hi ' + data.message[0];
+            })
+
+            .catch(function(error) {
+                console.error('Error capturing image: ', error);
+            });
+        }
+    </script>
+</body>
+</html>

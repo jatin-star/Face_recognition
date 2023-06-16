@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+          {% load static %}
+
+    <title>Start Capture</title>
+    <style>
+        *{padding: 0; margin: 0; box-sizing: border-box;}
+
+:root {
+ --backgroundColor: rgba(246, 241, 209);  --colorShadeA: rgb(106, 163, 137);
+  --colorShadeB: rgb(121, 186, 156);
+  --colorShadeC: rgb(150, 232, 195);
+  --colorShadeD: rgb(187, 232, 211);
+  --colorShadeE: rgb(205, 255, 232);
+  --text-color: hsla(200, 75%, 90%, 1);
+}
+
+body{height: 900px;}
+
+body{
+	background-color: black;
+	background-image: url('{% static 'image.jpg' %}');
+	background-size: cover;
+	background-position: center;
+}
+
+body {
+  justify-content: center;
+  font-size: 2rem;
+  line-height: 2;
+  display: flex;
+  margin: 0;
+  min-height: 100vh;
+}
+
+form {
+  position: relative;
+  display: inline;
+  top: 25%;
+  margin: 3rem;
+  width: 100%;
+  cursor: pointer;
+  text-decoration: none;
+  font-size: 1.5rem;
+  color: var(--colorShadeA);
+  font-weight: 700;
+  font-family: inherit;
+}
+
+form button{
+  width: 0 auto;
+  box-shadow: hsla(210, 40%, 52%, .3) 3px 3px 22px 3px;
+  border-radius: 50%;
+  font-family: 'Dancing Script', cursive;
+  padding: 2em 3em;
+  border: 2px solid var(--colorShadeA);
+  transform-style: preserve-3d;
+  transition: all 175ms cubic-bezier(0, 0, 1, 1);
+}
+
+
+form :hover {
+  background: var(--colorShadeD);
+  transform: translate(0, 0.375em);
+}
+
+form :active {
+  transform: translate(0em, 0.75em);
+}
+
+.error-container {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 20px;
+  border: 1px solid #ccc;
+}
+
+.message{
+   color: white;
+   text-align: center;
+}
+
+  </style>
+</head>
+<body>
+
+{% if message %}
+<div class="error-container">
+    <p class="message">{{ message }}</p>
+</div>
+{% endif %}
+
+<div class="container">
+  <form action="{% url 'face_recognize' %}" class="big-button">
+    <button type="submit" class="btn btn-primary">Face Recognize</button>
+  </form>
+
+  <form action="{% url 'database' %}" class="big-button">
+    <button type="submit" class="btn btn-success">Data Base</button>
+  </form>
+
+  <form action="{% url 'add_face' %}" class="big-button">
+    <button type="submit" class="btn btn-warning">Add Face</button>
+  </form>
+
+    <form action="{% url 'generate_dataframe' %}" class="input-button">
+       <button type="submit" class="btn btn-warning">Show DataBase</button>
+    </form>
+</div>
+</body>
+</html>
+
