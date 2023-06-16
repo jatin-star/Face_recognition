@@ -19,7 +19,7 @@ flann = NearestNeighbors(n_neighbors=1, algorithm='auto')
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 path = BASE_DIR + "/myapp/static/haarcascade_face.xml"
 trainy = Face_data['Name']
-resnet = InceptionResnetV1().eval()
+resnet = InceptionResnetV1(pretrained='vggface2').eval()
 
 face_cascade = cv2.CascadeClassifier(path)
 
