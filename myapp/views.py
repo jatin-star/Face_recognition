@@ -5,7 +5,6 @@ import json
 import pandas as pd
 from django.shortcuts import render
 import numpy as np
-import pickle
 from django.http import JsonResponse
 import torch
 from django.http import HttpResponse
@@ -47,7 +46,7 @@ def save_dataframe(request):
     # You can customize the saving logic based on your requirements
 
     combined_dataframes = [Face_data, Person_data, flann]
-    pickle_data = pickle.dumps(combined_dataframes)
+    pickle_data = pd.to_pickle(combined_dataframes, 'Face_data.pkl')
 
     # Create an HttpResponse with the CSV data
     response = HttpResponse(content_type='application/octet-stream')
