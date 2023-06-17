@@ -44,7 +44,7 @@ def save_dataframe(request):
     # You can customize the saving logic based on your requirements
 
     combined_dataframes = [Face_data, Person_data, flann]
-    pickle_data = pd.to_pickle(combined_dataframes, 'Face_data.pkl')
+    pickle_data = pickle.dumps(combined_dataframes)
 
     # Create an HttpResponse with the CSV data
     response = HttpResponse(content_type='application/octet-stream')
